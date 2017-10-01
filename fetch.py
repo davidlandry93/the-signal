@@ -1,6 +1,7 @@
 
 import csv
 import datetime
+import multiprocessing
 import requests as r
 import time
 
@@ -65,14 +66,20 @@ def save_show_of_day(date):
     if episode:
         save_episode(episode, date)
 
+    print('Done fetching shows of {}')
+
 
 if __name__ == '__main__':
     current_time = datetime.date(2017, 9, 3) # The signal last aired on sept 2nd 2017
     min_time = datetime.date(2005, 1, 1) # It lasted for about ten years
 
+    list_of_dates = []
     while current_time > min_time:
-        date = current_time.strftime('%Y-%m-%d')
-
-        save_show_of_day(date)
-
+        list_of_dates.append(current_time.strftime('%Y-%m-%d'))
         current_time = current_time - datetime.timedelta(days=1)
+
+
+    pool = multiprocessing.Pool(60)
+    pool.map_async(save_show_of_day, list_of_dates)
+    pool.close()
+    pool.join()
